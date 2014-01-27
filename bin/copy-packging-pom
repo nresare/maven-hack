@@ -1,0 +1,32 @@
+#!/usr/bin/python
+import os
+import shutil
+import sys
+from maven_hack import pom
+
+
+def copy_file(file_name, to_dir):
+    parts = file_name.split("/")
+    target = os.path.join(to_dir, *parts[1:])
+    target_dir = os.path.split(target)[0]
+    if not os.path.exists(target_dir):
+        print "creating directory %s" % target_dir
+        os.makedirs(target_dir)
+
+    print ("copying %s to %s" % (file_name, target))
+    shutil.copyfile(file_name, target)
+
+
+def copy_poms(from_dir, to_dir):
+    for path, dirs, files in os.walk(from_dir):
+        for f in files:
+            if not f.endswith(".pom"):
+                continue
+            fn = os.path.join(path, f)
+            p = pom.Pom(fn)
+            if p.packaging == 'pom':
+                copy_file(fn, to_dir)
+
+
+if __name__ == '__main__':
+    copy_poms(sys.argv[1], sys.argv[2])
